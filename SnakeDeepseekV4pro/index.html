@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="scoreboard">
+        <div class="score-item">
+          <span class="score-label">Skor</span>
+          <span class="score-value" id="score">0</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">High Score</span>
+          <span class="score-value" id="highScore">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="gameCanvas"></canvas>
+      <div class="instructions" id="instructions">
+        <p id="instructionsText"></p>
+        <p class="start-hint">Tekan tombol panah atau swipe untuk mulai</p>
+      </div>
+    </div>
+
+    <div class="game-over-overlay" id="gameOverOverlay">
+      <div class="game-over-card">
+        <h2>Game Over</h2>
+        <p class="final-score">Skor Akhir: <span id="finalScore">0</span></p>
+        <p class="final-highscore">High Score: <span id="finalHighScore">0</span></p>
+        <p class="new-record" id="newRecord"></p>
+        <button class="restart-btn" id="restartBtn">Main Lagi</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
