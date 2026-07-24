@@ -1,295 +1,240 @@
 (() => {
-  "use strict";
+  'use strict';
 
-  const GRID_SIZE = 20;
-  const INITIAL_LENGTH = 3;
-  const INITIAL_SPEED_MS = 150;
-  const MIN_SPEED_MS = 70;
-  const SPEED_STEP_MS = 8;
-  const SPEED_INCREASE_EVERY = 50;
-  const POINTS_PER_FOOD = 10;
-  const HIGH_SCORE_KEY = "snakeGameHighScore";
-  const SWIPE_THRESHOLD = 24;
+  const G = 20;             // grid size
+  const PTS = 10;           // points per food
+  const BASE_SPEED = 150;
+  const MIN_SPEED = 70;
+  const SPEED_STEP = 8;
+  const LVL_EVERY = 50;
+  const SWIPE = 24;
+  const KEY = 'kimi3-high';
 
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
-  const arenaWrapper = document.getElementById("arenaWrapper");
-  const scoreEl = document.getElementById("score");
-  const highScoreEl = document.getElementById("highScore");
-  const startOverlay = document.getElementById("startOverlay");
-  const gameOverOverlay = document.getElementById("gameOverOverlay");
-  const startBtn = document.getElementById("startBtn");
-  const restartBtn = document.getElementById("restartBtn");
-  const finalScoreEl = document.getElementById("finalScore");
-  const finalHighScoreEl = document.getElementById("finalHighScore");
-  const newRecordEl = document.getElementById("newRecord");
-  const controlInstructionEl = document.getElementById("controlInstruction");
-  const footerHintEl = document.getElementById("footerHint");
+  const $ = s => document.querySelector(s);
+  const canvas = $('#gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const arena = $('#arena');
+  const scoreEl = $('#score');
+  const hiEl = $('#highScore');
+  const stOver = $('#startOverlay');
+  const goOver = $('#gameOverOverlay');
+  const stBtn = $('#startBtn');
+  const reBtn = $('#restartBtn');
+  const finalS = $('#finalScore');
+  const finalH = $('#finalHighScore');
+  const newRec = $('#newRec');
+  const ctrlHint = $('#ctrlHint');
+  const footerTip = $('#footerTip');
 
-  let cellSize = 0;
-  let snake = [];
-  let direction = { x: 1, y: 0 };
-  let directionQueue = [];
-  let food = null;
-  let score = 0;
-  let highScore = loadHighScore();
-  let running = false;
-  let lastStepTime = 0;
-  let animationId = null;
+  let cell, snake, dir, q, food, score, hi, running, lastTick, raf, paused;
 
-  function loadHighScore() {
-    try {
-      return parseInt(localStorage.getItem(HIGH_SCORE_KEY), 10) || 0;
-    } catch {
-      return 0;
-    }
+  hi = (() => { try { return parseInt(localStorage.getItem(KEY)) || 0; } catch { return 0; } })();
+  hiEl.textContent = hi;
+
+  function saveHi() {
+    try { localStorage.setItem(KEY, String(hi)); } catch {}
   }
 
-  function saveHighScore(value) {
-    try {
-      localStorage.setItem(HIGH_SCORE_KEY, String(value));
-    } catch {
-      // localStorage tidak tersedia (mis. mode privat) — skor hanya bertahan di sesi ini
-    }
+  function speed() {
+    return Math.max(MIN_SPEED, BASE_SPEED - Math.floor(score / LVL_EVERY) * SPEED_STEP);
   }
 
-  function currentSpeed() {
-    const level = Math.floor(score / SPEED_INCREASE_EVERY);
-    return Math.max(MIN_SPEED_MS, INITIAL_SPEED_MS - level * SPEED_STEP_MS);
-  }
-
-  function resetState() {
-    const mid = Math.floor(GRID_SIZE / 2);
+  function reset() {
+    const m = G >> 1;
     snake = [];
-    for (let i = 0; i < INITIAL_LENGTH; i++) {
-      snake.push({ x: mid - i, y: mid });
-    }
-    direction = { x: 1, y: 0 };
-    directionQueue = [];
+    for (let i = 0; i < 3; i++) snake.push({ x: m - i, y: m });
+    dir = { x: 1, y: 0 };
+    q = [];
     score = 0;
-    scoreEl.textContent = "0";
+    scoreEl.textContent = '0';
     spawnFood();
   }
 
   function spawnFood() {
-    const emptyCells = [];
-    for (let y = 0; y < GRID_SIZE; y++) {
-      for (let x = 0; x < GRID_SIZE; x++) {
-        if (!snake.some((seg) => seg.x === x && seg.y === y)) {
-          emptyCells.push({ x, y });
-        }
-      }
-    }
-    if (emptyCells.length === 0) {
-      food = null;
-      return;
-    }
-    food = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    const free = [];
+    for (let y = 0; y < G; y++)
+      for (let x = 0; x < G; x++)
+        if (!snake.some(s => s.x === x && s.y === y)) free.push({ x, y });
+    food = free.length ? free[Math.random() * free.length | 0] : null;
   }
 
   function step() {
-    if (directionQueue.length > 0) {
-      direction = directionQueue.shift();
-    }
-
-    const head = {
-      x: snake[0].x + direction.x,
-      y: snake[0].y + direction.y,
-    };
-
-    if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
-      endGame();
-      return;
-    }
-
-    const willEat = food !== null && head.x === food.x && head.y === food.y;
-    const bodyToCheck = willEat ? snake : snake.slice(0, -1);
-    if (bodyToCheck.some((seg) => seg.x === head.x && seg.y === head.y)) {
-      endGame();
-      return;
-    }
-
-    snake.unshift(head);
-
-    if (willEat) {
-      score += POINTS_PER_FOOD;
-      scoreEl.textContent = String(score);
-      spawnFood();
-    } else {
-      snake.pop();
-    }
+    if (q.length) dir = q.shift();
+    const h = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+    if (h.x < 0 || h.x >= G || h.y < 0 || h.y >= G) return end();
+    const eat = food && h.x === food.x && h.y === food.y;
+    const body = eat ? snake : snake.slice(0, -1);
+    if (body.some(s => s.x === h.x && s.y === h.y)) return end();
+    snake.unshift(h);
+    if (eat) { score += PTS; scoreEl.textContent = score; spawnFood(); }
+    else snake.pop();
   }
 
-  function endGame() {
+  function end() {
     running = false;
-    const isNewRecord = score > highScore;
-    if (isNewRecord) {
-      highScore = score;
-      saveHighScore(highScore);
-      highScoreEl.textContent = String(highScore);
-    }
-    finalScoreEl.textContent = String(score);
-    finalHighScoreEl.textContent = String(highScore);
-    newRecordEl.classList.toggle("hidden", !isNewRecord);
-    gameOverOverlay.classList.remove("hidden");
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    const nr = score > hi;
+    if (nr) { hi = score; saveHi(); hiEl.textContent = hi; }
+    finalS.textContent = score;
+    finalH.textContent = hi;
+    newRec.classList.toggle('hidden', !nr);
+    goOver.classList.remove('hidden');
   }
 
   function draw() {
-    ctx.fillStyle = "#111827";
+    const s = canvas.width / G;
+    ctx.fillStyle = '#0e0c22';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = "rgba(148, 163, 184, 0.06)";
+    // subtle grid
+    ctx.strokeStyle = 'rgba(168, 130, 255, 0.04)';
     ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let i = 1; i < GRID_SIZE; i++) {
-      const pos = i * cellSize;
-      ctx.moveTo(pos, 0);
-      ctx.lineTo(pos, canvas.height);
-      ctx.moveTo(0, pos);
-      ctx.lineTo(canvas.width, pos);
+    for (let i = 1; i < G; i++) {
+      const p = i * s;
+      ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, canvas.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(canvas.width, p); ctx.stroke();
     }
-    ctx.stroke();
 
+    // food — pulsing berry
     if (food) {
-      const cx = food.x * cellSize + cellSize / 2;
-      const cy = food.y * cellSize + cellSize / 2;
-      ctx.fillStyle = "#f87171";
-      ctx.beginPath();
-      ctx.arc(cx, cy, cellSize * 0.38, 0, Math.PI * 2);
+      const cx = food.x * s + s / 2, cy = food.y * s + s / 2;
+      const r = s * 0.35 + Math.sin(Date.now() / 200) * s * 0.04;
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      grad.addColorStop(0, '#f472b6');
+      grad.addColorStop(1, '#ec4899');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+      // glow
+      ctx.shadowColor = '#ec4899'; ctx.shadowBlur = 12;
       ctx.fill();
+      ctx.shadowBlur = 0;
     }
 
+    // snake
     snake.forEach((seg, i) => {
-      const ratio = 1 - i / Math.max(snake.length, 1);
-      const lightness = 45 + ratio * 20;
-      ctx.fillStyle = i === 0 ? "#4ade80" : `hsl(142, 65%, ${lightness}%)`;
-      const inset = i === 0 ? cellSize * 0.05 : cellSize * 0.08;
-      ctx.fillRect(
-        seg.x * cellSize + inset,
-        seg.y * cellSize + inset,
-        cellSize - inset * 2,
-        cellSize - inset * 2
-      );
+      const ratio = 1 - i / snake.length;
+      const x = seg.x * s, y = seg.y * s;
+      const inset = i === 0 ? s * 0.04 : s * 0.08;
+      const sz = s - inset * 2;
+      if (i === 0) {
+        // head — gradient
+        const grd = ctx.createLinearGradient(x + inset, y + inset, x + inset + sz, y + inset + sz);
+        grd.addColorStop(0, '#a78bfa');
+        grd.addColorStop(1, '#7c3aed');
+        ctx.fillStyle = grd;
+        ctx.shadowColor = '#7c3aed'; ctx.shadowBlur = 14;
+        roundRect(ctx, x + inset, y + inset, sz, sz, s * 0.18);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // eyes
+        ctx.fillStyle = '#0c0b1a';
+        const es = Math.max(2, s * 0.08);
+        const eo = s * 0.22;
+        const ax = dir.x * eo, ay = dir.y * eo;
+        const px = dir.y * eo * 0.5, py = -dir.x * eo * 0.5;
+        [-1, 1].forEach(side => {
+          ctx.beginPath();
+          ctx.arc(x + s / 2 + ax + px * side, y + s / 2 + ay + py * side, es, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      } else {
+        // body — gradient tail
+        const l = 40 + ratio * 25;
+        ctx.fillStyle = `hsl(264, ${65 + ratio * 15}%, ${l}%)`;
+        roundRect(ctx, x + inset, y + inset, sz, sz, s * 0.15);
+        ctx.fill();
+      }
     });
   }
 
-  function loop(timestamp) {
+  function roundRect(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+  }
+
+  function loop(ts) {
     if (!running) return;
-    if (timestamp - lastStepTime >= currentSpeed()) {
-      lastStepTime = timestamp;
-      step();
-    }
+    if (!paused && ts - lastTick >= speed()) { lastTick = ts; step(); }
     draw();
-    if (running) {
-      animationId = requestAnimationFrame(loop);
-    }
+    if (running) raf = requestAnimationFrame(loop);
   }
 
-  function startGame() {
-    if (animationId !== null) {
-      cancelAnimationFrame(animationId);
-      animationId = null;
-    }
-    resetState();
-    startOverlay.classList.add("hidden");
-    gameOverOverlay.classList.add("hidden");
+  function start() {
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    reset();
+    stOver.classList.add('hidden');
+    goOver.classList.add('hidden');
+    paused = false;
     running = true;
-    lastStepTime = performance.now();
-    animationId = requestAnimationFrame(loop);
+    lastTick = performance.now();
+    raf = requestAnimationFrame(loop);
   }
 
-  function queueDirection(dir) {
-    const last = directionQueue.length > 0
-      ? directionQueue[directionQueue.length - 1]
-      : direction;
-    const isOpposite = dir.x === -last.x && dir.y === -last.y;
-    const isSame = dir.x === last.x && dir.y === last.y;
-    if (!isOpposite && !isSame && directionQueue.length < 3) {
-      directionQueue.push(dir);
-    }
+  function queue(d) {
+    const l = q.length ? q[q.length - 1] : dir;
+    if (d.x === -l.x && d.y === -l.y) return;
+    if (d.x === l.x && d.y === l.y) return;
+    if (q.length < 3) q.push(d);
   }
 
-  const KEY_DIRECTIONS = {
-    ArrowUp: { x: 0, y: -1 },
-    ArrowDown: { x: 0, y: 1 },
-    ArrowLeft: { x: -1, y: 0 },
-    ArrowRight: { x: 1, y: 0 },
+  const MAP = {
+    ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 },
+    ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 },
+    w: { x: 0, y: -1 }, s: { x: 0, y: 1 },
+    a: { x: -1, y: 0 }, d: { x: 1, y: 0 },
   };
 
-  document.addEventListener("keydown", (event) => {
-    const dir = KEY_DIRECTIONS[event.key];
-    if (dir) {
-      event.preventDefault();
-      if (running) {
-        queueDirection(dir);
-      }
-      return;
+  document.addEventListener('keydown', e => {
+    const d = MAP[e.key];
+    if (d) { e.preventDefault(); if (running) queue(d); return; }
+    if (e.key === ' ' || e.key === 'Escape') {
+      e.preventDefault();
+      if (!stOver.classList.contains('hidden') || !goOver.classList.contains('hidden')) return;
+      paused = !paused;
+      if (!paused) { lastTick = performance.now(); raf = requestAnimationFrame(loop); }
+      footerTip.textContent = paused ? '⏸️ Di-pause — Spasi untuk lanjut' : '↑ ↓ ← →  —  Spasi untuk pause';
     }
-    if (event.key === "Enter" || event.key === " ") {
-      if (!startOverlay.classList.contains("hidden")) {
-        event.preventDefault();
-        startGame();
-      } else if (!gameOverOverlay.classList.contains("hidden")) {
-        event.preventDefault();
-        startGame();
-      }
+    if (e.key === 'Enter') {
+      if (!stOver.classList.contains('hidden')) { e.preventDefault(); start(); }
+      else if (!goOver.classList.contains('hidden')) { e.preventDefault(); start(); }
     }
   });
 
-  let touchStartX = 0;
-  let touchStartY = 0;
-
-  arenaWrapper.addEventListener("touchstart", (event) => {
-    const touch = event.changedTouches[0];
-    touchStartX = touch.clientX;
-    touchStartY = touch.clientY;
+  // touch
+  let tx = 0, ty = 0;
+  arena.addEventListener('touchstart', e => {
+    const t = e.changedTouches[0];
+    tx = t.clientX; ty = t.clientY;
+  }, { passive: true });
+  arena.addEventListener('touchend', e => {
+    if (!running || paused) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - tx, dy = t.clientY - ty;
+    if (Math.abs(dx) < SWIPE && Math.abs(dy) < SWIPE) return;
+    if (Math.abs(dx) > Math.abs(dy)) queue({ x: dx > 0 ? 1 : -1, y: 0 });
+    else queue({ x: 0, y: dy > 0 ? 1 : -1 });
   }, { passive: true });
 
-  arenaWrapper.addEventListener("touchend", (event) => {
-    if (!running) return;
-    const touch = event.changedTouches[0];
-    const dx = touch.clientX - touchStartX;
-    const dy = touch.clientY - touchStartY;
-    if (Math.abs(dx) < SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_THRESHOLD) return;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      queueDirection({ x: dx > 0 ? 1 : -1, y: 0 });
-    } else {
-      queueDirection({ x: 0, y: dy > 0 ? 1 : -1 });
-    }
-  }, { passive: true });
+  stBtn.addEventListener('click', start);
+  reBtn.addEventListener('click', start);
 
-  startBtn.addEventListener("click", startGame);
-  restartBtn.addEventListener("click", startGame);
-
-  function isTouchDevice() {
-    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  // detect device input
+  if (window.matchMedia('(pointer: coarse)').matches) {
+    ctrlHint.textContent = 'Geser layar untuk bergerak';
+    footerTip.textContent = 'Geser layar — sentuh 2x untuk pause';
   }
 
-  function applyDeviceInstructions() {
-    if (isTouchDevice()) {
-      controlInstructionEl.textContent =
-        "Geser (swipe) layar ke arah yang diinginkan untuk bergerak.";
-      footerHintEl.textContent = "Geser layar untuk bergerak";
-    } else {
-      controlInstructionEl.textContent =
-        "Gunakan tombol panah (↑ ↓ ← →) untuk bergerak.";
-      footerHintEl.textContent = "Tekan tombol panah untuk bergerak";
-    }
-  }
-
-  function resizeCanvas() {
-    const size = arenaWrapper.clientWidth;
+  function resize() {
+    const sz = arena.clientWidth;
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.round(size * dpr);
-    canvas.height = Math.round(size * dpr);
-    cellSize = canvas.width / GRID_SIZE;
+    canvas.width = sz * dpr;
+    canvas.height = sz * dpr;
+    cell = canvas.width / G;
     draw();
   }
+  window.addEventListener('resize', resize);
 
-  window.addEventListener("resize", resizeCanvas);
-
-  highScoreEl.textContent = String(highScore);
-  applyDeviceInstructions();
-  resetState();
-  resizeCanvas();
+  reset();
+  resize();
 })();

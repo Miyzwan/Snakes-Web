@@ -3,49 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="description" content="Game Snake klasik yang bisa dimainkan langsung di browser — desktop dan mobile.">
-  <title>Snake Game</title>
+  <meta name="description" content="Snake klasik edisi Kimi K3 — cosmic purple theme.">
+  <title>Kimi K3 — Cosmic Snake</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="game-container">
-    <header class="scoreboard">
-      <div class="score-box">
-        <span class="score-label">Skor</span>
-        <span class="score-value" id="score">0</span>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">✦</span>
+        <h1>KIMI<span class="lite">K3</span></h1>
       </div>
-      <h1 class="game-title">SNAKE</h1>
-      <div class="score-box">
-        <span class="score-label">Tertinggi</span>
-        <span class="score-value" id="highScore">0</span>
+      <div class="scores">
+        <div class="box">
+          <span class="lbl">Skor</span>
+          <strong id="score">0</strong>
+        </div>
+        <div class="box hi">
+          <span class="lbl">Rekor</span>
+          <strong id="highScore">0</strong>
+        </div>
       </div>
     </header>
 
-    <div class="arena-wrapper" id="arenaWrapper">
-      <canvas id="gameCanvas" width="400" height="400" aria-label="Arena permainan Snake"></canvas>
+    <div class="arena" id="arena">
+      <canvas id="gameCanvas" width="400" height="400"></canvas>
 
-      <div class="overlay" id="startOverlay">
-        <div class="overlay-content">
-          <h2 class="overlay-title">SNAKE</h2>
-          <p class="overlay-text" id="controlInstruction">Gunakan tombol panah (↑ ↓ ← →) untuk bergerak.</p>
-          <button class="btn" id="startBtn" type="button">Mulai Main</button>
+      <div class="over" id="startOverlay">
+        <div class="modal">
+          <span class="emoji-lg">🌌</span>
+          <h2>Siap Bertualang?</h2>
+          <p id="ctrlHint">Gunakan tombol panah untuk bergerak</p>
+          <button class="btn" id="startBtn">MAIN</button>
         </div>
       </div>
 
-      <div class="overlay hidden" id="gameOverOverlay">
-        <div class="overlay-content">
-          <h2 class="overlay-title game-over-title">Game Over</h2>
-          <p class="overlay-text">Skor Akhir: <strong id="finalScore">0</strong></p>
-          <p class="overlay-text">Skor Tertinggi: <strong id="finalHighScore">0</strong></p>
-          <p class="overlay-text new-record hidden" id="newRecord">Rekor Baru!</p>
-          <button class="btn" id="restartBtn" type="button">Main Lagi</button>
+      <div class="over hidden" id="gameOverOverlay">
+        <div class="modal">
+          <span class="emoji-lg">💫</span>
+          <h2 class="dead">Game Over</h2>
+          <div class="finals">
+            <div><span class="lbl">Skor</span><strong id="finalScore">0</strong></div>
+            <div><span class="lbl">Rekor</span><strong id="finalHighScore">0</strong></div>
+          </div>
+          <p class="new-rec hidden" id="newRec">✨ Rekor Baru!</p>
+          <button class="btn" id="restartBtn">LAGI</button>
         </div>
       </div>
     </div>
 
-    <footer class="hint" id="footerHint">Tekan tombol panah untuk bergerak</footer>
+    <p class="tip" id="footerTip">↑ ↓ ← →  —  Spasi untuk pause</p>
   </main>
-
   <script src="script.js"></script>
 </body>
 </html>
