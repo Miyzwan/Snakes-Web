@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Snake klasik yang dapat dimainkan langsung di browser."
+    />
+    <title>Snake — Makan. Tumbuh. Bertahan.</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="game-header">
+        <p class="eyebrow">SNAKE CLASSIC</p>
+        <h1>Makan. Tumbuh. Bertahan.</h1>
+        <div class="scoreboard" aria-label="Papan skor">
+          <div class="score-card">
+            <span>Skor</span>
+            <strong id="score" aria-live="polite">0</strong>
+          </div>
+          <div class="score-card high-score-card">
+            <span>Rekor</span>
+            <strong id="high-score">0</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="arena-wrap" aria-label="Area permainan Snake">
+        <canvas
+          id="game-canvas"
+          width="600"
+          height="600"
+          tabindex="0"
+          role="application"
+          aria-label="Arena permainan Snake. Gunakan tombol panah untuk mengendalikan ular."
+        ></canvas>
+        <div id="game-over" class="game-over hidden" role="dialog" aria-modal="true" aria-labelledby="game-over-title">
+          <div class="game-over-content">
+            <p class="eyebrow">PERMAINAN BERAKHIR</p>
+            <h2 id="game-over-title">Game Over</h2>
+            <p class="final-score">Skor akhir: <strong id="final-score">0</strong></p>
+            <p class="final-high-score">Rekor kamu: <strong id="final-high-score">0</strong></p>
+            <button id="restart-button" type="button">Main Lagi <span aria-hidden="true">↻</span></button>
+          </div>
+        </div>
+      </section>
+
+      <p id="controls-help" class="controls-help">Gunakan tombol panah (↑ ↓ ← →) untuk bergerak.</p>
+      <p class="small-note">Jangan menabrak dinding atau tubuhmu sendiri.</p>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
