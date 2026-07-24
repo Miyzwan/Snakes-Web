@@ -26,6 +26,24 @@ body {
     linear-gradient(140deg, #07130e 0%, #0b1d15 54%, #07130e 100%);
 }
 
+.back-link {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 999;
+  color: var(--lime);
+  text-decoration: none;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: rgba(17, 33, 26, 0.74);
+  border: 1px solid rgba(183, 248, 64, 0.2);
+  transition: background 0.15s;
+}
+.back-link:hover { background: rgba(183, 248, 64, 0.1); }
+
 .game-shell {
   width: min(100%, 43rem);
   padding: clamp(1.5rem, 5vw, 3.5rem) 1.25rem 2rem;

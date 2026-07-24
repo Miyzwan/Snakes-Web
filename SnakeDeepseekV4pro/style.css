@@ -15,6 +15,24 @@ body {
   overflow: hidden;
 }
 
+.back-link {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 999;
+  color: #00ff87;
+  text-decoration: none;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: rgba(18, 22, 32, 0.8);
+  border: 1px solid rgba(0, 255, 135, 0.2);
+  transition: background 0.15s;
+}
+.back-link:hover { background: rgba(0, 255, 135, 0.1); }
+
 .container {
   display: flex;
   flex-direction: column;
