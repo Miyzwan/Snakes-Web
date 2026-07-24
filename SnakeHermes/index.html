@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Snake Hermes — game Snake klasik edisi Hermes Agent by Nous Research." />
+  <title>Hermes — Arc Snake</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="shell">
+    <a href="../" class="back-link" aria-label="Kembali ke portal">Kembali</a>
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">△</span>
+        <div class="brand-text">
+          <h1>HERMES</h1>
+          <p class="tagline">ARC SNAKE</p>
+        </div>
+      </div>
+      <div class="scores">
+        <div class="box">
+          <span class="lbl">SKOR</span>
+          <strong class="val" id="score">0</strong>
+        </div>
+        <div class="box hi">
+          <span class="lbl">REKOR</span>
+          <strong class="val" id="highScore">0</strong>
+        </div>
+      </div>
+    </header>
+
+    <div class="arena-wrap">
+      <canvas id="gc" width="400" height="400"></canvas>
+
+      <!-- START OVERLAY -->
+      <div id="startOverlay" class="ol active">
+        <div class="ol-card">
+          <div class="ol-icon">△</div>
+          <h2>ARC SNAKE</h2>
+          <p class="ol-sub">Makan, bertumbuh, cetak rekor.</p>
+
+          <div class="ctrl-guide" id="ctrlGuide">
+            <div class="guide desktop-only">
+              <span class="key">↑</span><span class="key">←</span><span class="key">↓</span><span class="key">→</span>
+              <p>atau WASD</p>
+            </div>
+            <div class="guide mobile-only">
+              <span class="swipe">↔</span>
+              <p>Geser layar</p>
+            </div>
+          </div>
+
+          <button class="btn" id="btnStart">MAIN</button>
+        </div>
+      </div>
+
+      <!-- GAME OVER OVERLAY -->
+      <div id="goOverlay" class="ol hidden">
+        <div class="ol-card">
+          <div class="ol-icon dead">✕</div>
+          <h2 class="go-title">GAME OVER</h2>
+          <p class="ol-sub" id="goReason">Menabrak dinding!</p>
+
+          <div class="final-stats">
+            <div class="stat">
+              <span class="stat-lbl">SKOR</span>
+              <strong class="stat-val" id="finalScore">0</strong>
+            </div>
+            <div class="stat">
+              <span class="stat-lbl">REKOR</span>
+              <strong class="stat-val" id="finalHigh">0</strong>
+              <span class="badge hidden" id="newBadge">REKOR BARU</span>
+            </div>
+          </div>
+
+          <button class="btn" id="btnRestart">MAIN LAGI</button>
+        </div>
+      </div>
+
+      <!-- PAUSE OVERLAY -->
+      <div id="pauseOverlay" class="ol hidden">
+        <div class="ol-card">
+          <h2>DI-PAUSE</h2>
+          <p class="ol-sub">Tekan Spasi atau tombol di bawah</p>
+          <button class="btn sec" id="btnResume">LANJUT</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="act-btn" id="btnSound" title="Suara">
+        <span id="sndIcon">♪</span> <span id="sndLabel">Suara</span>
+      </button>
+      <button class="act-btn" id="btnPause" title="Pause">
+        <span>⏸</span> Pause
+      </button>
+    </div>
+
+    <div class="dpad" id="dpad">
+      <button class="d-btn up" id="dUp" aria-label="Atas">▲</button>
+      <div class="d-mid">
+        <button class="d-btn" id="dLeft" aria-label="Kiri">◀</button>
+        <button class="d-btn" id="dRight" aria-label="Kanan">▶</button>
+      </div>
+      <button class="d-btn dn" id="dDown" aria-label="Bawah">▼</button>
+    </div>
+
+    <footer class="hint">
+      <p id="hintText">Panah / WASD — Spasi pause</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
