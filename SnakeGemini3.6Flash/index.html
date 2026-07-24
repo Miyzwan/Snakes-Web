@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neon Snake Game — Classic Arcade</title>
+  <meta name="description" content="Game Snake klasik berbasis web dengan tampilan neon cyber modern. Dimainkan di desktop & mobile." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="game-wrapper">
+    <!-- Header Area -->
+    <header class="game-header">
+      <div class="brand">
+        <span class="icon">🐍</span>
+        <h1>NEON<span class="highlight">SNAKE</span></h1>
+      </div>
+      <div class="scoreboard">
+        <div class="score-card">
+          <span class="label">SKOR</span>
+          <span class="value" id="currentScore">0</span>
+        </div>
+        <div class="score-card highlight-card">
+          <span class="label">TERTINGGI</span>
+          <span class="value" id="highScore">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Board Area -->
+    <main class="game-container">
+      <div class="canvas-wrapper">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+        <!-- Start Overlay -->
+        <div id="startOverlay" class="overlay active">
+          <div class="overlay-card">
+            <div class="pulse-icon">🎮</div>
+            <h2>SIAP BERMAIN?</h2>
+            <p class="subtitle">Makan makanan, bertambah panjang, dan cetak skor tertinggi!</p>
+            
+            <div class="control-guide" id="startControlGuide">
+              <div class="guide-item desktop-only">
+                <span class="key-badge">↑</span>
+                <span class="key-badge">←</span>
+                <span class="key-badge">↓</span>
+                <span class="key-badge">→</span>
+                <p>Gunakan tombol panah atau WASD</p>
+              </div>
+              <div class="guide-item mobile-only">
+                <span class="swipe-icon">👆</span>
+                <p>Geser (swipe) layar untuk bergerak</p>
+              </div>
+            </div>
+
+            <button id="btnStart" class="btn btn-primary">MULAI GAME</button>
+          </div>
+        </div>
+
+        <!-- Game Over Overlay -->
+        <div id="gameOverOverlay" class="overlay hidden">
+          <div class="overlay-card">
+            <div class="skull-icon">💀</div>
+            <h2 class="danger-title">GAME OVER</h2>
+            <p class="subtitle" id="gameOverReason">Kamu menabrak dinding!</p>
+
+            <div class="final-stats">
+              <div class="stat-box">
+                <span class="stat-label">SKOR AKHIR</span>
+                <span class="stat-value" id="finalScore">0</span>
+              </div>
+              <div class="stat-box" id="newRecordBox">
+                <span class="stat-label">REKOR DIRI</span>
+                <span class="stat-value" id="finalHighScore">0</span>
+                <span class="badge-new hidden" id="newRecordBadge">REKOR BARU! 🎉</span>
+              </div>
+            </div>
+
+            <button id="btnRestart" class="btn btn-primary">MAIN LAGI</button>
+          </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="pauseOverlay" class="overlay hidden">
+          <div class="overlay-card">
+            <h2>DI-PAUSE</h2>
+            <p>Tekan SPASI atau tombol di bawah untuk lanjut</p>
+            <button id="btnResume" class="btn btn-secondary">LANJUTKAN</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls bar -->
+      <div class="action-bar">
+        <button id="btnSoundToggle" class="btn-icon" title="Toggle Suara">
+          <span id="soundIcon">🔊</span> <span id="soundText">Suara: ON</span>
+        </button>
+        <button id="btnPauseToggle" class="btn-icon" title="Pause Game">
+          <span>⏸️</span> Pause
+        </button>
+      </div>
+
+      <!-- Touch Controls for Mobile/Tablet -->
+      <div class="touch-controls" id="touchControls">
+        <div class="dpad">
+          <button id="btnUp" class="dpad-btn dpad-up" aria-label="Atas">▲</button>
+          <div class="dpad-row">
+            <button id="btnLeft" class="dpad-btn dpad-left" aria-label="Kiri">◄</button>
+            <button id="btnRight" class="dpad-btn dpad-right" aria-label="Kanan">►</button>
+          </div>
+          <button id="btnDown" class="dpad-btn dpad-down" aria-label="Bawah">▼</button>
+        </div>
+      </div>
+
+      <!-- Controls Hint -->
+      <footer class="controls-hint">
+        <p id="dynamicHint">Kontrol: Tombol Panah / WASD | Spasi untuk Pause</p>
+      </footer>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
